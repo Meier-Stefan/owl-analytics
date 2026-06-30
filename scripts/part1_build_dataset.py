@@ -104,7 +104,7 @@ def fetch_one_symbol(symbol, rate_limiter, log_lock, semaphore=None):
             data = response.json()
         except requests.RequestException as e:
             log_message(log_lock, f"ERROR request symbol={symbol}: {e}")
-            return symbol, []
+            return False, []
 
         rows = [
             {
@@ -127,28 +127,34 @@ def fetch_one_symbol(symbol, rate_limiter, log_lock, semaphore=None):
 
         log_message(log_lock, f"END request symbol={symbol} records={len(rows)}")
         print(f"Downloaded {symbol}: {len(rows)} records")
-        return symbol, rows
+        return True, rows
 
 
 def download_serial(symbols, rate_limiter, log_lock, semaphore=None):
     all_rows = []
+    failures = 0
     for symbol in symbols:
-        _, rows = fetch_one_symbol(symbol, rate_limiter, log_lock, semaphore)
+        ok, rows = fetch_one_symbol(symbol, rate_limiter, log_lock, semaphore)
+        if not ok:
+            failures += 1
         all_rows.extend(rows)
-    return all_rows
+    return all_rows, failures
 
 
 def download_multithreaded(symbols, rate_limiter, log_lock, semaphore=None):
     all_rows = []
+    failures = 0
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = {
             executor.submit(fetch_one_symbol, symbol, rate_limiter, log_lock, semaphore): symbol
             for symbol in symbols
         }
         for future in as_completed(futures):
-            _, rows = future.result()
+            ok, rows = future.result()
+            if not ok:
+                failures += 1
             all_rows.extend(rows)
-    return all_rows
+    return all_rows, failures
 
 
 def main():
@@ -170,17 +176,17 @@ def main():
     print()
     print_and_log(log_lock, "Starting serial download for 10 symbols")
     serial_start = time.perf_counter()
-    serial_rows = download_serial(SYMBOLS, RateLimiter(REQUESTS_PER_MINUTE), log_lock, Semaphore(5))
+    serial_rows, serial_failures = download_serial(SYMBOLS, RateLimiter(REQUESTS_PER_MINUTE), log_lock, Semaphore(5))
     serial_time = time.perf_counter() - serial_start
-    print_and_log(log_lock, f"Serial download complete: {len(serial_rows)} records in {serial_time:.4f}s")
+    print_and_log(log_lock, f"Serial download complete: {len(serial_rows)} records, {serial_failures} failures in {serial_time:.4f}s")
 
     print()
     print_and_log(log_lock, "Starting multithreaded download for 10 symbols")
     mt_rate_limiter = RateLimiter(REQUESTS_PER_MINUTE)
     mt_start = time.perf_counter()
-    mt_rows = download_multithreaded(SYMBOLS, mt_rate_limiter, log_lock, Semaphore(5))
+    mt_rows, mt_failures = download_multithreaded(SYMBOLS, mt_rate_limiter, log_lock, Semaphore(5))
     mt_time = time.perf_counter() - mt_start
-    print_and_log(log_lock, "Multithreaded download complete")
+    print_and_log(log_lock, f"Multithreaded download complete: {len(mt_rows)} records, {mt_failures} failures")
 
     write_csv(OUTPUT_CSV, FIELDNAMES, mt_rows)
     log_message(log_lock, f"WROTE csv={OUTPUT_CSV} records={len(mt_rows)}")
