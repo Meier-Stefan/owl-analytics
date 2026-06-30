@@ -46,6 +46,38 @@ def print_and_log(log_lock, message):
     log_message(log_lock, message)
 
 
+class RateLimiter:
+    def __init__(self, max_per_minute):
+        self.max_per_minute = max_per_minute
+        self._lock = Lock()
+        self._timestamps = []
+        self._wait_count = 0
+
+    def acquire(self):
+        with self._lock:
+            now = time.monotonic()
+            cutoff = now - 60.0
+            self._timestamps = [t for t in self._timestamps if t > cutoff]
+
+            if len(self._timestamps) >= self.max_per_minute:
+                sleep_time = self._timestamps[0] - cutoff
+                self._wait_count += 1
+            else:
+                self._timestamps.append(now)
+                return 0.0
+
+        time.sleep(sleep_time)
+
+        with self._lock:
+            self._timestamps.append(time.monotonic())
+        return sleep_time
+
+    @property
+    def wait_count(self):
+        with self._lock:
+            return self._wait_count
+
+
 def write_csv(filepath, fieldnames, rows):
     filepath.parent.mkdir(parents=True, exist_ok=True)
     with open(filepath, "w", newline="", encoding="utf-8") as f:
