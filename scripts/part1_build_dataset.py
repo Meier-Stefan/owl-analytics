@@ -141,11 +141,11 @@ def download_serial(symbols, rate_limiter, log_lock, semaphore=None):
     return all_rows
 
 
-def download_multithreaded(symbols, semaphore, rate_limiter, log_lock):
+def download_multithreaded(symbols, rate_limiter, log_lock, semaphore=None):
     all_rows = []
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = {
-            executor.submit(fetch_one_symbol, symbol, semaphore, rate_limiter, log_lock): symbol
+            executor.submit(fetch_one_symbol, symbol, rate_limiter, log_lock, semaphore): symbol
             for symbol in symbols
         }
         for future in as_completed(futures):
@@ -181,7 +181,7 @@ def main():
     print_and_log(log_lock, "Starting multithreaded download for 10 symbols")
     mt_rate_limiter = RateLimiter(REQUESTS_PER_MINUTE)
     mt_start = time.perf_counter()
-    mt_rows = download_multithreaded(SYMBOLS, Semaphore(5), mt_rate_limiter, log_lock)
+    mt_rows = download_multithreaded(SYMBOLS, mt_rate_limiter, log_lock, Semaphore(5))
     mt_time = time.perf_counter() - mt_start
     print_and_log(log_lock, "Multithreaded download complete")
 
