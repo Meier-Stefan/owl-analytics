@@ -133,10 +133,10 @@ def fetch_one_symbol(symbol, rate_limiter, log_lock, semaphore=None):
         return symbol, rows
 
 
-def download_serial(symbols, semaphore, rate_limiter, log_lock):
+def download_serial(symbols, rate_limiter, log_lock, semaphore=None):
     all_rows = []
     for symbol in symbols:
-        _, rows = fetch_one_symbol(symbol, semaphore, rate_limiter, log_lock)
+        _, rows = fetch_one_symbol(symbol, rate_limiter, log_lock, semaphore)
         all_rows.extend(rows)
     return all_rows
 
@@ -173,7 +173,7 @@ def main():
     print()
     print_and_log(log_lock, "Starting serial download for 10 symbols")
     serial_start = time.perf_counter()
-    serial_rows = download_serial(SYMBOLS, Semaphore(5), RateLimiter(REQUESTS_PER_MINUTE), log_lock)
+    serial_rows = download_serial(SYMBOLS, RateLimiter(REQUESTS_PER_MINUTE), log_lock, Semaphore(5))
     serial_time = time.perf_counter() - serial_start
     print_and_log(log_lock, f"Serial download complete: {len(serial_rows)} records in {serial_time:.4f}s")
 
