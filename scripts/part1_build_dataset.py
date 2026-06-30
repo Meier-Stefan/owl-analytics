@@ -127,7 +127,7 @@ def fetch_one_symbol(symbol, rate_limiter, log_lock, semaphore=None):
         ]
 
         log_message(log_lock, f"END request symbol={symbol} records={len(rows)}")
-        print(f"Downloaded {symbol}: {len(rows)} records")
+        print_and_log(log_lock, f"Downloaded {symbol}: {len(rows)} records")
         return True, rows
 
 
