@@ -24,6 +24,7 @@ RESULTS_DIR = Path("results")
 OUTPUT_CSV = CLEAN_DIR / "clean_market_data.csv"
 LOG_FILE = RESULTS_DIR / "api_download.log"
 BENCHMARK_CSV = RESULTS_DIR / "runtime_comparison.csv"
+MAX_WORKERS = 5
 
 FIELDNAMES = [
     "symbol", "interval", "open_time", "open", "high", "low", "close",
@@ -148,7 +149,7 @@ def download_serial(symbols, rate_limiter, log_lock, semaphore=None):
 def download_multithreaded(symbols, rate_limiter, log_lock, semaphore=None):
     all_rows = []
     failures = 0
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = {
             executor.submit(fetch_one_symbol, symbol, rate_limiter, log_lock, semaphore): symbol
             for symbol in symbols
@@ -235,7 +236,9 @@ def main():
 
     print()
     print_and_log(log_lock, "Script completed successfully")
-    print_and_log(log_lock, "Output files found: 3")
+    output_files = [OUTPUT_CSV, LOG_FILE, BENCHMARK_CSV]
+    existing = [p for p in output_files if p.exists()]
+    print_and_log(log_lock, f"Output files found: {len(existing)}")
     print_and_log(log_lock, "No price analytics were calculated in Team 1")
 
 
