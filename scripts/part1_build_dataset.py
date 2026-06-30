@@ -1,8 +1,9 @@
 import csv
 import time
+from contextlib import nullcontext
 from datetime import datetime, timezone
 from pathlib import Path
-from threading import Lock
+from threading import Lock, Semaphore
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
@@ -84,6 +85,52 @@ def write_csv(filepath, fieldnames, rows):
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
+
+
+def fetch_one_symbol(symbol, rate_limiter, log_lock, semaphore=None):
+    context = semaphore or nullcontext()
+    with context:
+        sleep_time = rate_limiter.acquire()
+        if sleep_time > 0:
+            log_message(log_lock, f"RATE_LIMIT wait {sleep_time:.2f}s for symbol={symbol}")
+            time.sleep(sleep_time)
+
+        log_message(log_lock, f"START request symbol={symbol} interval={INTERVAL} limit={LIMIT}")
+
+        try:
+            response = requests.get(
+                BASE_URL,
+                params={"symbol": symbol, "interval": INTERVAL, "limit": LIMIT},
+                timeout=30,
+            )
+            response.raise_for_status()
+            data = response.json()
+        except requests.RequestException as e:
+            log_message(log_lock, f"ERROR request symbol={symbol}: {e}")
+            return symbol, []
+
+        rows = [
+            {
+                "symbol": symbol,
+                "interval": INTERVAL,
+                "open_time": convert_timestamp(r[0]),
+                "open": r[1],
+                "high": r[2],
+                "low": r[3],
+                "close": r[4],
+                "volume": r[5],
+                "close_time": convert_timestamp(r[6]),
+                "quote_volume": r[7],
+                "trade_count": r[8],
+                "taker_buy_base_volume": r[9],
+                "taker_buy_quote_volume": r[10],
+            }
+            for r in data
+        ]
+
+        log_message(log_lock, f"END request symbol={symbol} records={len(rows)}")
+        print(f"Downloaded {symbol}: {len(rows)} records")
+        return symbol, rows
 
 
 def main():
