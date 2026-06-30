@@ -49,8 +49,9 @@ def print_and_log(log_lock, message):
 
 
 class RateLimiter:
-    def __init__(self, max_per_minute):
+    def __init__(self, max_per_minute, log_lock=None):
         self.max_per_minute = max_per_minute
+        self._log_lock = log_lock
         self._lock = Lock()
         self._timestamps = []
         self._wait_count = 0
@@ -68,6 +69,8 @@ class RateLimiter:
                 self._timestamps.append(now)
                 return 0.0
 
+        if self._log_lock is not None:
+            log_message(self._log_lock, f"RATE_LIMIT wait {sleep_time:.2f}s")
         time.sleep(sleep_time)
 
         with self._lock:
@@ -177,13 +180,13 @@ def main():
     print()
     print_and_log(log_lock, "Starting serial download for 10 symbols")
     serial_start = time.perf_counter()
-    serial_rows, serial_failures = download_serial(SYMBOLS, RateLimiter(REQUESTS_PER_MINUTE), log_lock, Semaphore(5))
+    serial_rows, serial_failures = download_serial(SYMBOLS, RateLimiter(REQUESTS_PER_MINUTE, log_lock), log_lock, Semaphore(5))
     serial_time = time.perf_counter() - serial_start
     print_and_log(log_lock, f"Serial download complete: {len(serial_rows)} records, {serial_failures} failures in {serial_time:.4f}s")
 
     print()
     print_and_log(log_lock, "Starting multithreaded download for 10 symbols")
-    mt_rate_limiter = RateLimiter(REQUESTS_PER_MINUTE)
+    mt_rate_limiter = RateLimiter(REQUESTS_PER_MINUTE, log_lock)
     mt_start = time.perf_counter()
     mt_rows, mt_failures = download_multithreaded(SYMBOLS, mt_rate_limiter, log_lock, Semaphore(5))
     mt_time = time.perf_counter() - mt_start
