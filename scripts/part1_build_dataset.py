@@ -90,10 +90,7 @@ def write_csv(filepath, fieldnames, rows):
 def fetch_one_symbol(symbol, rate_limiter, log_lock, semaphore=None):
     context = semaphore or nullcontext()
     with context:
-        sleep_time = rate_limiter.acquire()
-        if sleep_time > 0:
-            log_message(log_lock, f"RATE_LIMIT wait {sleep_time:.2f}s for symbol={symbol}")
-            time.sleep(sleep_time)
+        rate_limiter.acquire()
 
         log_message(log_lock, f"START request symbol={symbol} interval={INTERVAL} limit={LIMIT}")
 
