@@ -133,6 +133,14 @@ def fetch_one_symbol(symbol, rate_limiter, log_lock, semaphore=None):
         return symbol, rows
 
 
+def download_serial(symbols, semaphore, rate_limiter, log_lock):
+    all_rows = []
+    for symbol in symbols:
+        _, rows = fetch_one_symbol(symbol, semaphore, rate_limiter, log_lock)
+        all_rows.extend(rows)
+    return all_rows
+
+
 def main():
     log_lock = Lock()
 
