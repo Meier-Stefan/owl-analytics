@@ -1,4 +1,5 @@
 import csv
+import sys
 import time
 from contextlib import nullcontext
 from datetime import datetime, timezone
@@ -221,6 +222,13 @@ def main():
     print_and_log(log_lock, f"serial_seconds: {round(serial_time, 4)}")
     print_and_log(log_lock, f"multithreading_seconds: {round(mt_time, 4)}")
     print_and_log(log_lock, f"Saved: {BENCHMARK_CSV}")
+
+    total_failures = serial_failures + mt_failures
+    if total_failures > 0:
+        print_and_log(log_lock, f"Download failures detected: {total_failures}")
+        print_and_log(log_lock, f"  serial failures: {serial_failures}")
+        print_and_log(log_lock, f"  multithreaded failures: {mt_failures}")
+        sys.exit(1)
 
     print()
     print_and_log(log_lock, "Script completed successfully")
