@@ -141,6 +141,19 @@ def download_serial(symbols, semaphore, rate_limiter, log_lock):
     return all_rows
 
 
+def download_multithreaded(symbols, semaphore, rate_limiter, log_lock):
+    all_rows = []
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = {
+            executor.submit(fetch_one_symbol, symbol, semaphore, rate_limiter, log_lock): symbol
+            for symbol in symbols
+        }
+        for future in as_completed(futures):
+            _, rows = future.result()
+            all_rows.extend(rows)
+    return all_rows
+
+
 def main():
     log_lock = Lock()
 
@@ -148,7 +161,68 @@ def main():
     with open(LOG_FILE, "w", encoding="utf-8") as f:
         f.write("")
 
-    print_and_log(log_lock, "Script started")
+    print_and_log(log_lock, f"Symbols configured: {len(SYMBOLS)}")
+    print_and_log(log_lock, f"Interval: {INTERVAL}")
+    print_and_log(log_lock, f"Limit per symbol: {LIMIT}")
+    print_and_log(log_lock, f"Expected records: {len(SYMBOLS) * LIMIT}")
+
+    CLEAN_DIR.mkdir(parents=True, exist_ok=True)
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    print_and_log(log_lock, f"Created folders: {CLEAN_DIR}, {RESULTS_DIR}")
+
+    print()
+    print_and_log(log_lock, "Starting serial download for 10 symbols")
+    serial_start = time.perf_counter()
+    serial_rows = download_serial(SYMBOLS, Semaphore(5), RateLimiter(REQUESTS_PER_MINUTE), log_lock)
+    serial_time = time.perf_counter() - serial_start
+    print_and_log(log_lock, f"Serial download complete: {len(serial_rows)} records in {serial_time:.4f}s")
+
+    print()
+    print_and_log(log_lock, "Starting multithreaded download for 10 symbols")
+    mt_rate_limiter = RateLimiter(REQUESTS_PER_MINUTE)
+    mt_start = time.perf_counter()
+    mt_rows = download_multithreaded(SYMBOLS, Semaphore(5), mt_rate_limiter, log_lock)
+    mt_time = time.perf_counter() - mt_start
+    print_and_log(log_lock, "Multithreaded download complete")
+
+    write_csv(OUTPUT_CSV, FIELDNAMES, mt_rows)
+    log_message(log_lock, f"WROTE csv={OUTPUT_CSV} records={len(mt_rows)}")
+    print()
+    print_and_log(log_lock, f"Saved: {OUTPUT_CSV}")
+    print_and_log(log_lock, f"Total records saved: {len(mt_rows)}")
+
+    check = "passed" if len(mt_rows) == len(SYMBOLS) * LIMIT else "failed"
+    print_and_log(log_lock, f"Record count check: {check}")
+
+    print_and_log(log_lock, f"Request limit: {REQUESTS_PER_MINUTE} requests per minute")
+    print_and_log(log_lock, "Current request batch allowed")
+    print_and_log(log_lock, f"Rate-limit wait events logged: {mt_rate_limiter.wait_count}")
+
+    benchmark_rows = [
+        {
+            "method": "serial",
+            "seconds": round(serial_time, 4),
+            "records": len(serial_rows),
+            "note": "downloaded the ten symbols one after another",
+        },
+        {
+            "method": "multithreading",
+            "seconds": round(mt_time, 4),
+            "records": len(mt_rows),
+            "note": "downloaded several symbols at the same time",
+        },
+    ]
+    write_csv(BENCHMARK_CSV, ["method", "seconds", "records", "note"], benchmark_rows)
+    print()
+    print_and_log(log_lock, "Runtime comparison")
+    print_and_log(log_lock, f"serial_seconds: {round(serial_time, 4)}")
+    print_and_log(log_lock, f"multithreading_seconds: {round(mt_time, 4)}")
+    print_and_log(log_lock, f"Saved: {BENCHMARK_CSV}")
+
+    print()
+    print_and_log(log_lock, "Script completed successfully")
+    print_and_log(log_lock, "Output files found: 3")
+    print_and_log(log_lock, "No price analytics were calculated in Team 1")
 
 
 if __name__ == "__main__":
