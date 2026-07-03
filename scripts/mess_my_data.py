@@ -18,18 +18,7 @@ NUMERIC_COLUMNS = [
 
 TIME_COLUMNS = ["open_time", "close_time"]
 SYMBOL_COLUMN = "symbol"
-SYMBOLS = [
-    "BTCUSDT",
-    "ETHUSDT",
-    "BNBUSDT",
-    "SOLUSDT",
-    "XRPUSDT",
-    "ADAUSDT",
-    "DOGEUSDT",
-    "AVAXUSDT",
-    "LINKUSDT",
-    "DOTUSDT",
-]
+from config import SYMBOLS
 
 
 def read_csv(path):

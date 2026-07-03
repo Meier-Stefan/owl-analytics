@@ -9,11 +9,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 
+from config import SYMBOLS
 
-SYMBOLS = [
-    "BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT",
-    "ADAUSDT", "DOGEUSDT", "AVAXUSDT", "LINKUSDT", "DOTUSDT",
-]
 INTERVAL = "1h"
 LIMIT = 1000
 BASE_URL = "https://data-api.binance.vision/api/v3/klines"
