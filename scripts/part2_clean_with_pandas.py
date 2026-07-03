@@ -152,6 +152,38 @@ def main():
     print(f"\nSaved cleaned dataset: {CLEANED_CSV}")
     print(f"Cleaned rows: {len(df)}")
 
+    # ── Sample check: 50 records (5 per symbol) ──
+    sample = (
+        df.dropna()
+        .groupby("symbol", group_keys=False)
+        .sample(n=5, random_state=42)
+    )
+    sample = sample.reset_index(drop=True)
+
+    avg_close = sample.groupby("symbol")["close"].mean()
+    highest_vol_symbol = sample.groupby("symbol")["volume"].mean().idxmax()
+    direction_counts = sample["candle_direction"].value_counts()
+    max_range_row = sample.loc[sample["price_range"].idxmax()]
+
+    print(f"\nSample check: 50 records")
+    print(f"Average close price by symbol:")
+    for symbol, price in avg_close.items():
+        print(f"  {symbol}: {price:.2f}")
+    print(f"Highest average volume: {highest_vol_symbol}")
+    print(f"Candle direction counts:")
+    for direction, count in direction_counts.items():
+        print(f"  {direction}: {count}")
+    print(f"Largest price range row: {max_range_row['symbol']} "
+          f"(range={max_range_row['price_range']:.2f})")
+
+    SAMPLE_CSV.parent.mkdir(parents=True, exist_ok=True)
+    sample.to_csv(SAMPLE_CSV, index=False)
+    print(f"\nSaved sample results: {SAMPLE_CSV}")
+    print(f"Sample rows used: {len(sample)}")
+    print(f"Symbols included: {sample['symbol'].nunique()}")
+    print(f"Records per symbol: 5")
+    print(f"Questions answered: 4")
+
 
 if __name__ == "__main__":
     main()
