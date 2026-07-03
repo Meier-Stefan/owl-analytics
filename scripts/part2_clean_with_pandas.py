@@ -79,5 +79,15 @@ def main():
     print(", ".join(df["symbol"].unique()))
     print(f"Unique cleaned symbols: {df['symbol'].nunique()}")
 
+    # ── Task 5: Remove duplicates ──
+    before_dedup = len(df)
+    dup_count = df.duplicated().sum()
+    df = df.drop_duplicates()
+    after_dedup = len(df)
+    print(f"\nDuplicate rows found: {dup_count}")
+    print(f"Rows before removing duplicates: {before_dedup}")
+    print(f"Rows after removing duplicates: {after_dedup}")
+
+
 if __name__ == "__main__":
     main()
