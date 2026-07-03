@@ -66,8 +66,18 @@ def main():
     for col, count in invalid_times.items():
         print(f"Invalid {col} values: {count}")
 
-
-
+    # ── Task 4b: Clean symbol names ──
+    print(f"\nSymbols before cleaning:")
+    print(", ".join(df["symbol"].unique()))
+    df["symbol"] = (
+        df["symbol"]
+        .str.strip()
+        .str.upper()
+        .str.replace("/", "", regex=False)
+    )
+    print(f"Symbols after cleaning:")
+    print(", ".join(df["symbol"].unique()))
+    print(f"Unique cleaned symbols: {df['symbol'].nunique()}")
 
 if __name__ == "__main__":
     main()
