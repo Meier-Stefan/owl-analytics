@@ -54,6 +54,20 @@ def main():
     print(", ".join(NUMERIC_COLS))
     print(f"Invalid numeric rows after conversion: {invalid_count}")
 
+    # ── Task 4a: Convert timestamp columns ──
+    print(f"\nConverted timestamp columns:")
+    invalid_times = {}
+    for col in TIME_COLS:
+        before = df[col].isna().sum()
+        df[col] = pd.to_datetime(df[col], errors="coerce")
+        after = df[col].isna().sum()
+        invalid_times[col] = after - before
+    print(", ".join(TIME_COLS))
+    for col, count in invalid_times.items():
+        print(f"Invalid {col} values: {count}")
+
+
+
 
 if __name__ == "__main__":
     main()
