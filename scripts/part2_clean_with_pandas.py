@@ -88,6 +88,14 @@ def main():
     print(f"Rows before removing duplicates: {before_dedup}")
     print(f"Rows after removing duplicates: {after_dedup}")
 
+    # ── Task 6: Detect impossible values ──
+    neg_vol = (df["volume"] < 0).sum()
+    neg_trade = (df["trade_count"] < 0).sum()
+    high_low = (df["high"] < df["low"]).sum()
+    print(f"\nNegative volume rows: {neg_vol}")
+    print(f"Negative trade_count rows: {neg_trade}")
+    print(f"Rows where high < low: {high_low}")
+
 
 if __name__ == "__main__":
     main()
