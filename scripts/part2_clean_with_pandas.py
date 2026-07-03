@@ -28,6 +28,11 @@ def main():
     rows, cols = df.shape
     print(f"Rows: {rows}")
     print(f"Columns: {cols}")
+
+    report = {
+        "rows_before": len(df),
+        "missing_before": int(df.isna().sum().sum()),
+    }
     print("\nFirst 10 rows:")
     print(df.head(10).to_string(index=False))
     print("\nData types:")
@@ -119,6 +124,34 @@ def main():
           f"price_change={example['price_change']:.2f} "
           f"percent_change={example['percent_change']:.2f} "
           f"candle_direction={example['candle_direction']}")
+
+    # ── Task 8: Data-quality report ──
+    report["rows_after"] = len(df)
+    report["missing_after"] = int(df.isna().sum().sum())
+    report["duplicates_found"] = dup_count
+    report["invalid_numeric"] = invalid_count
+    report["invalid_timestamps"] = sum(invalid_times.values())
+    report["negative_volume"] = neg_vol
+
+    print(f"\nData-quality report")
+    print(f"Rows before cleaning: {report['rows_before']}")
+    print(f"Rows after cleaning: {report['rows_after']}")
+    print(f"Missing values before: {report['missing_before']}")
+    print(f"Missing values after: {report['missing_after']}")
+    print(f"Duplicate rows found: {report['duplicates_found']}")
+    print(f"Cleaning decision: "
+          f"invalid numeric values ({report['invalid_numeric']} rows) "
+          f"and invalid timestamps ({report['invalid_timestamps']} rows) "
+          f"were coerced to NaN. "
+          f"Negative volumes ({report['negative_volume']} rows) "
+          f"were not removed but flagged for review.")
+
+    # ── Save cleaned CSV ──
+    CLEANED_CSV.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(CLEANED_CSV, index=False)
+    print(f"\nSaved cleaned dataset: {CLEANED_CSV}")
+    print(f"Cleaned rows: {len(df)}")
+
 
 if __name__ == "__main__":
     main()
