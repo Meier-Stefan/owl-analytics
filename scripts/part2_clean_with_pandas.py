@@ -2,20 +2,14 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-from config import SYMBOLS
+from config import (
+    MESSY_DIR, CLEAN_DIR, RESULTS_DIR,
+    NUMERIC_COLS, TIME_COLS,
+)
 
-
-MESSY_CSV = Path("data/messy/messy_market_data.csv")
-CLEANED_CSV = Path("data/clean/cleaned_market_data.csv")
-SAMPLE_CSV = Path("results/pandas_sample_results.csv")
-
-NUMERIC_COLS = [
-    "open", "high", "low", "close",
-    "volume", "quote_volume", "trade_count",
-    "taker_buy_base_volume", "taker_buy_quote_volume",
-]
-
-TIME_COLS = ["open_time", "close_time"]
+MESSY_CSV = MESSY_DIR / "messy_market_data.csv"
+CLEANED_CSV = CLEAN_DIR / "cleaned_market_data.csv"
+SAMPLE_CSV = RESULTS_DIR / "pandas_sample_results.csv"
 
 
 def main():

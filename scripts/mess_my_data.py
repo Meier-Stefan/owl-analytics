@@ -4,21 +4,9 @@ import random
 from pathlib import Path
 
 
-NUMERIC_COLUMNS = [
-    "open",
-    "high",
-    "low",
-    "close",
-    "volume",
-    "quote_volume",
-    "trade_count",
-    "taker_buy_base_volume",
-    "taker_buy_quote_volume",
-]
+from config import SYMBOLS, NUMERIC_COLS as NUMERIC_COLUMNS, TIME_COLS as TIME_COLUMNS
 
-TIME_COLUMNS = ["open_time", "close_time"]
 SYMBOL_COLUMN = "symbol"
-from config import SYMBOLS
 
 
 def read_csv(path):

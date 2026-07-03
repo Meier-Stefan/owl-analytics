@@ -9,25 +9,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 
-from config import SYMBOLS
+from config import (
+    SYMBOLS, INTERVAL, LIMIT, BASE_URL, RATE_LIMIT, RATE_WINDOW,
+    MAX_WORKERS, CLEAN_DIR, RESULTS_DIR, FIELDNAMES,
+)
 
-INTERVAL = "1h"
-LIMIT = 1000
-BASE_URL = "https://data-api.binance.vision/api/v3/klines"
-REQUESTS_PER_MINUTE = 100
-
-CLEAN_DIR = Path("data/clean")
-RESULTS_DIR = Path("results")
 OUTPUT_CSV = CLEAN_DIR / "clean_market_data.csv"
 LOG_FILE = RESULTS_DIR / "api_download.log"
 BENCHMARK_CSV = RESULTS_DIR / "runtime_comparison.csv"
-MAX_WORKERS = 5
-
-FIELDNAMES = [
-    "symbol", "interval", "open_time", "open", "high", "low", "close",
-    "volume", "close_time", "quote_volume", "trade_count",
-    "taker_buy_base_volume", "taker_buy_quote_volume",
-]
 
 
 def convert_timestamp(ms):
@@ -47,8 +36,9 @@ def print_and_log(log_lock, message):
 
 
 class RateLimiter:
-    def __init__(self, max_per_minute, log_lock=None):
+    def __init__(self, max_per_minute, log_lock=None, window=60.0):
         self.max_per_minute = max_per_minute
+        self._window = window
         self._log_lock = log_lock
         self._lock = Lock()
         self._timestamps = []
@@ -57,7 +47,7 @@ class RateLimiter:
     def acquire(self):
         with self._lock:
             now = time.monotonic()
-            cutoff = now - 60.0
+            cutoff = now - self._window
             self._timestamps = [t for t in self._timestamps if t > cutoff]
 
             if len(self._timestamps) >= self.max_per_minute:
@@ -178,13 +168,13 @@ def main():
     print()
     print_and_log(log_lock, "Starting serial download for 10 symbols")
     serial_start = time.perf_counter()
-    serial_rows, serial_failures = download_serial(SYMBOLS, RateLimiter(REQUESTS_PER_MINUTE, log_lock), log_lock, Semaphore(5))
+    serial_rows, serial_failures = download_serial(SYMBOLS, RateLimiter(RATE_LIMIT, log_lock, RATE_WINDOW), log_lock, Semaphore(5))
     serial_time = time.perf_counter() - serial_start
     print_and_log(log_lock, f"Serial download complete: {len(serial_rows)} records, {serial_failures} failures in {serial_time:.4f}s")
 
     print()
     print_and_log(log_lock, "Starting multithreaded download for 10 symbols")
-    mt_rate_limiter = RateLimiter(REQUESTS_PER_MINUTE, log_lock)
+    mt_rate_limiter = RateLimiter(RATE_LIMIT, log_lock, RATE_WINDOW)
     mt_start = time.perf_counter()
     mt_rows, mt_failures = download_multithreaded(SYMBOLS, mt_rate_limiter, log_lock, Semaphore(5))
     mt_time = time.perf_counter() - mt_start
@@ -199,7 +189,7 @@ def main():
     check = "passed" if len(mt_rows) == len(SYMBOLS) * LIMIT else "failed"
     print_and_log(log_lock, f"Record count check: {check}")
 
-    print_and_log(log_lock, f"Request limit: {REQUESTS_PER_MINUTE} requests per minute")
+    print_and_log(log_lock, f"Request limit: {RATE_LIMIT} requests per minute")
     print_and_log(log_lock, "Current request batch allowed")
     print_and_log(log_lock, f"Rate-limit wait events logged: {mt_rate_limiter.wait_count}")
 
