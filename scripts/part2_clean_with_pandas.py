@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from pathlib import Path
 
@@ -96,6 +97,28 @@ def main():
     print(f"Negative trade_count rows: {neg_trade}")
     print(f"Rows where high < low: {high_low}")
 
+    # ── Task 7: Create new columns ──
+    choices = ["up", "down"]
+    conditions = [
+        df["close"] > df["open"],
+        df["close"] < df["open"],
+    ]
+    
+    df["price_range"] = df["high"] - df["low"]
+    df["price_change"] = df["close"] - df["open"]
+    df["percent_change"] = (df["price_change"] / df["open"]) * 100
+    df["candle_direction"] = np.select(conditions, choices, default="flat")
+    
+    print(f"\nCreated columns:")
+    print("price_range, price_change, percent_change, candle_direction")
+    print(f"\nExample row:")
+    example = df.dropna().iloc[5]
+    print(f"open={example['open']:.2f} close={example['close']:.2f} "
+          f"high={example['high']:.2f} low={example['low']:.2f}")
+    print(f"price_range={example['price_range']:.2f} "
+          f"price_change={example['price_change']:.2f} "
+          f"percent_change={example['percent_change']:.2f} "
+          f"candle_direction={example['candle_direction']}")
 
 if __name__ == "__main__":
     main()
