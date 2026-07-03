@@ -43,6 +43,17 @@ def main():
     else:
         print("No missing values found")
 
+    # ── Task 3: Convert numeric columns ──
+    print(f"\nConverted numeric columns:")
+    invalid_count = 0
+    for col in NUMERIC_COLS:
+        before = df[col].isna().sum()
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+        after = df[col].isna().sum()
+        invalid_count += after - before
+    print(", ".join(NUMERIC_COLS))
+    print(f"Invalid numeric rows after conversion: {invalid_count}")
+
 
 if __name__ == "__main__":
     main()
