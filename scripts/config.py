@@ -16,6 +16,7 @@ DATA_DIR = Path("data")
 CLEAN_DIR = DATA_DIR / "clean"
 MESSY_DIR = DATA_DIR / "messy"
 RESULTS_DIR = Path("results")
+REPORTS_DIR = Path("reports")
 
 FIELDNAMES = [
     "symbol", "interval", "open_time", "open", "high", "low", "close",

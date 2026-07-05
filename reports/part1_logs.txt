@@ -1,0 +1,75 @@
+
+
+===Task 1: API Configuration ===
+
+Symbols configured: 10
+Interval: 1h
+Limit per symbol: 1000
+Expected records: 10000
+Created folders: data/clean, results
+
+
+===Task 6: Download Benchmark ===
+
+Starting serial download for 10 symbols
+Downloaded BTCUSDT: 1000 records
+Downloaded ETHUSDT: 1000 records
+Downloaded BNBUSDT: 1000 records
+Downloaded SOLUSDT: 1000 records
+Downloaded XRPUSDT: 1000 records
+Downloaded ADAUSDT: 1000 records
+Downloaded DOGEUSDT: 1000 records
+Downloaded AVAXUSDT: 1000 records
+Downloaded LINKUSDT: 1000 records
+Downloaded DOTUSDT: 1000 records
+Serial download complete: 10000 records, 0 failures in 17.0828s
+
+
+===Task 3: Multithreaded Download ===
+
+Starting multithreaded download for 10 symbols
+Downloaded XRPUSDT: 1000 records
+Downloaded ETHUSDT: 1000 records
+Downloaded SOLUSDT: 1000 records
+Downloaded BNBUSDT: 1000 records
+Downloaded BTCUSDT: 1000 records
+Downloaded LINKUSDT: 1000 records
+Downloaded DOTUSDT: 1000 records
+Downloaded AVAXUSDT: 1000 records
+Downloaded ADAUSDT: 1000 records
+Downloaded DOGEUSDT: 1000 records
+Multithreaded download complete: 10000 records, 0 failures
+
+
+===Task 2: Combined CSV Dataset ===
+
+Saved: data/clean/clean_market_data.csv
+Total records saved: 10000
+Record count check: passed
+
+
+===Task 4: Rate Limiting ===
+
+Request limit: 100 requests per minute
+Current request batch allowed
+Rate-limit wait events logged: 0
+
+
+===Task 5: Log File ===
+
+Log file created: results/api_download.log
+All requests logged with START / END / WROTE markers
+
+
+===Benchmark Results ===
+
+serial_seconds: 17.0828
+multithreading_seconds: 4.1515
+Saved: results/runtime_comparison.csv
+
+
+===Task 7: Script Completion ===
+
+Script completed successfully
+Output files found: 3
+No price analytics were calculated in Team 1

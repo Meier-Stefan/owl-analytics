@@ -1,23 +1,32 @@
 import numpy as np
 import pandas as pd
-from pathlib import Path
+import sys
 
 from config import (
-    MESSY_DIR, CLEAN_DIR, RESULTS_DIR,
+    MESSY_DIR, CLEAN_DIR, RESULTS_DIR, REPORTS_DIR,
     NUMERIC_COLS, TIME_COLS,
 )
+from io_utils import _Tee
 
 MESSY_CSV = MESSY_DIR / "messy_market_data.csv"
 CLEANED_CSV = CLEAN_DIR / "cleaned_market_data.csv"
 SAMPLE_CSV = RESULTS_DIR / "pandas_sample_results.csv"
 
+PART2_LOGS = REPORTS_DIR / "part2_logs.txt"
+
 
 def main():
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    _report_file = open(PART2_LOGS, "w", encoding="utf-8")
+    _old_stdout = sys.stdout
+    sys.stdout = _Tee(_report_file)
+
     print("Team 2: Data Quality")
     print("=" * 50)
 
-    # ── Task 1: Load and inspect ──
-    print(f"\nLoaded {MESSY_CSV}")
+
+    print("\n=== Task 1: Load and Inspect ===\n" )
+    print(f"Loaded {MESSY_CSV}")
     df = pd.read_csv(MESSY_CSV)
     rows, cols = df.shape
     print(f"Rows: {rows}")
@@ -32,10 +41,11 @@ def main():
     print("\nData types:")
     print(df.dtypes.to_string())
 
-    # ── Task 2: Missing values ──
+
+    print("\n=== Task 2: Missing Values ===\n" )
     missing = df.isna().sum()
     missing_filtered = missing[missing > 0]
-    print(f"\nMissing values:")
+    print(f"Missing values:")
     if len(missing_filtered) > 0:
         print(missing_filtered.to_string())
         worst = missing_filtered.idxmax()
@@ -43,8 +53,9 @@ def main():
     else:
         print("No missing values found")
 
-    # ── Task 3: Convert numeric columns ──
-    print(f"\nConverted numeric columns:")
+
+    print("\n=== Task 3: Numeric Conversion ===\n" )
+    print(f"Converted numeric columns:")
     invalid_count = 0
     for col in NUMERIC_COLS:
         before = df[col].isna().sum()
@@ -54,8 +65,9 @@ def main():
     print(", ".join(NUMERIC_COLS))
     print(f"Invalid numeric rows after conversion: {invalid_count}")
 
-    # ── Task 4a: Convert timestamp columns ──
-    print(f"\nConverted timestamp columns:")
+
+    print("\n=== Task 4: Timestamp and Symbol Cleaning ===\n" )
+    print(f"Converted timestamp columns:")
     invalid_times = {}
     for col in TIME_COLS:
         before = df[col].isna().sum()
@@ -66,33 +78,36 @@ def main():
     for col, count in invalid_times.items():
         print(f"Invalid {col} values: {count}")
 
-    # ── Task 4b: Clean symbol names ──
     print(f"\nSymbols before cleaning:")
-    print(", ".join(df["symbol"].unique()))
+    symbols_before = df["symbol"].unique().tolist()
+    print(", ".join(symbols_before))
     df["symbol"] = (
         df["symbol"]
         .str.strip()
         .str.upper()
         .str.replace("/", "", regex=False)
     )
+    symbols_after = df["symbol"].unique().tolist()
     print(f"Symbols after cleaning:")
-    print(", ".join(df["symbol"].unique()))
+    print(", ".join(symbols_after))
     print(f"Unique cleaned symbols: {df['symbol'].nunique()}")
 
-    # ── Task 5: Remove duplicates ──
+
+    print("\n=== Task 5: Remove Duplicates ===\n" )
     before_dedup = len(df)
     dup_count = df.duplicated().sum()
     df = df.drop_duplicates()
     after_dedup = len(df)
-    print(f"\nDuplicate rows found: {dup_count}")
+    print(f"Duplicate rows found: {dup_count}")
     print(f"Rows before removing duplicates: {before_dedup}")
     print(f"Rows after removing duplicates: {after_dedup}")
 
-    # ── Task 6: Detect impossible values ──
+
+    print("\n=== Task 6: Detect Impossible Values ===\n" )
     neg_vol = (df["volume"] < 0).sum()
     neg_trade = (df["trade_count"] < 0).sum()
     high_low = (df["high"] < df["low"]).sum()
-    print(f"\nNegative volume rows: {neg_vol}")
+    print(f"Negative volume rows: {neg_vol}")
     print(f"Negative trade_count rows: {neg_trade}")
     print(f"Rows where high < low: {high_low}")
 
@@ -106,7 +121,8 @@ def main():
         df = df[~impossible_mask]
         print(f"Dropped impossible values: {dropped_impossible} rows")
 
-    # ── Task 7: Create new columns ──
+
+    print("\n=== Task 7: Create New Columns ===\n" )
     choices = ["up", "down"]
     conditions = [
         df["close"] > df["open"],
@@ -118,7 +134,7 @@ def main():
     df["percent_change"] = (df["price_change"] / df["open"]) * 100
     df["candle_direction"] = np.select(conditions, choices, default="flat")
     
-    print(f"\nCreated columns:")
+    print(f"Created columns:")
     print("price_range, price_change, percent_change, candle_direction")
     print(f"\nExample row:")
     example = df.dropna().iloc[5]
@@ -129,7 +145,8 @@ def main():
           f"percent_change={example['percent_change']:.2f} "
           f"candle_direction={example['candle_direction']}")
 
-    # ── Task 8: Data-quality report ──
+
+    print("\n=== Task 8: Data-Quality Report ===\n" )
     report["rows_after"] = len(df)
     report["missing_after"] = int(df.isna().sum().sum())
     report["duplicates_found"] = dup_count
@@ -138,7 +155,7 @@ def main():
     report["negative_volume"] = neg_vol
     report["dropped_impossible"] = dropped_impossible
 
-    print(f"\nData-quality report")
+    print(f"Data-quality report")
     print(f"Rows before cleaning: {report['rows_before']}")
     print(f"Rows after cleaning: {report['rows_after']}")
     print(f"Missing values before: {report['missing_before']}")
@@ -149,15 +166,17 @@ def main():
           f"and invalid timestamps ({report['invalid_timestamps']} rows) "
           f"were coerced to NaN. "
           f"Negative volumes ({report['negative_volume']} rows) "
-          f"were not removed but flagged for review.")
+          f"were removed via the impossible-values check. "
+          f"Rows with high<low or trade_count<0 were also dropped. "
+          f"Duplicate rows were removed entirely.")
 
-    # ── Save cleaned CSV ──
     CLEANED_CSV.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(CLEANED_CSV, index=False)
     print(f"\nSaved cleaned dataset: {CLEANED_CSV}")
     print(f"Cleaned rows: {len(df)}")
 
-    # ── Sample check: 50 records (5 per symbol) ──
+
+    print("\n=== Sample A: 50-Record Sample Analysis ===\n" )
     sample = (
         df.dropna()
         .groupby("symbol", group_keys=False)
@@ -170,7 +189,7 @@ def main():
     direction_counts = sample["candle_direction"].value_counts()
     max_range_row = sample.loc[sample["price_range"].idxmax()]
 
-    print(f"\nSample check: 50 records")
+    print(f"Sample check: 50 records")
     print(f"Average close price by symbol:")
     for symbol, price in avg_close.items():
         print(f"  {symbol}: {price:.2f}")
@@ -188,6 +207,29 @@ def main():
     print(f"Symbols included: {sample['symbol'].nunique()}")
     print(f"Records per symbol: 5")
     print(f"Questions answered: 4")
+
+
+    print("\n=== Sample B: Why Pandas Is Not Enough for Final Analytics ===\n" )
+    print("Pandas is useful for checking and cleaning data by hand because it provides "
+          "interactive data inspection, quick visualisation of missing values, easy type coercion,"
+          " and immediate feedback on a small subset of the data, but not for what is considered big data. "
+          "\nHowever, a 50-record sample is not enough for proper analytics because: "
+          "\n\t(1) It lacks statistical significance and cannot represent the full "
+          "distribution of a large dataset; \n\t(2) Rare patterns or outliers present "
+          "in the full dataset may be entirely absent from a small random sample. "
+          "In our case we took 5 of each symbol to make it balanced, but it is still not representative. "
+          "\n\t(3) Aggregate metrics like averages and counts computed on 50 rows "
+          "have high variance and would mislead business decisions; "
+          "\n\t(4) Spark is designed to process the full dataset in parallel, "
+          "providing exact results and scalable analytics that pandas on a "
+          "single machine cannot achieve for large volumes.")
+
+    sys.stdout.flush()
+    _report_file.flush()
+    sys.stdout = _old_stdout
+    _report_file.close()
+
+    print(f"Report saved: {PART2_LOGS}")
 
 
 if __name__ == "__main__":
