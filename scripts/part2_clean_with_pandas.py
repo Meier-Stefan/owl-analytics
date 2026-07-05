@@ -96,6 +96,16 @@ def main():
     print(f"Negative trade_count rows: {neg_trade}")
     print(f"Rows where high < low: {high_low}")
 
+    impossible_mask = (
+        (df["volume"] < 0)
+        | (df["trade_count"] < 0)
+        | (df["high"] < df["low"])
+    )
+    dropped_impossible = int(impossible_mask.sum())
+    if dropped_impossible:
+        df = df[~impossible_mask]
+        print(f"Dropped impossible values: {dropped_impossible} rows")
+
     # ── Task 7: Create new columns ──
     choices = ["up", "down"]
     conditions = [
@@ -126,6 +136,7 @@ def main():
     report["invalid_numeric"] = invalid_count
     report["invalid_timestamps"] = sum(invalid_times.values())
     report["negative_volume"] = neg_vol
+    report["dropped_impossible"] = dropped_impossible
 
     print(f"\nData-quality report")
     print(f"Rows before cleaning: {report['rows_before']}")
