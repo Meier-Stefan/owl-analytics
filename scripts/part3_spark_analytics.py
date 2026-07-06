@@ -4,7 +4,7 @@ from pathlib import Path
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     col, avg, min as spark_min, max as spark_max, stddev,
-    sum as spark_sum, to_date, hour, date_format, count, when, lit,
+    sum as spark_sum, to_date, hour, date_format, count, when, lit, log
 )
 
 from config import CLEAN_DIR, RESULTS_DIR, REPORTS_DIR
@@ -171,10 +171,77 @@ def main():
         "  ROUND(AVG(volume), 2) AS avg_volume "
         "FROM market_data "
         "WHERE trade_count IS NOT NULL AND quote_volume IS NOT NULL "
-        "GROUP BY symbol "
-        "ORDER BY total_trades DESC"
+        "GROUP BY symbol"
     )
-    activity.show(10, truncate=False)
+    
+    activity = activity.withColumn(
+        "symbol_activity_score",
+        col("total_trades") * log(col("total_quote_volume") + lit(1))
+    )
+    
+    activity = activity.withColumn(
+        "symbol_activity_rank",
+        row_number().over(Window.orderBy(col("symbol_activity_score").desc()))
+    )
+    
+    activity.orderBy(col("symbol_activity_score").desc()).show(10, truncate=False)
+    
+
+    print("\n=== Task 7: Activity by Time ===\n")
+
+    hour_activity = spark.sql(
+        "SELECT trade_hour, "
+        "  SUM(trade_count) AS total_trades, "
+        "  SUM(quote_volume) AS total_quote_volume "
+        "FROM market_data "
+        "WHERE trade_hour IS NOT NULL "
+        "GROUP BY trade_hour"
+    )
+
+    hour_activity = hour_activity.withColumn(
+        "hour_activity_score",
+        col("total_trades") * log(col("total_quote_volume") + lit(1))
+    )
+
+    busiest_hour = hour_activity.orderBy(col("hour_activity_score").desc()).limit(1)
+
+    print("Activity by hour:")
+    hour_activity.orderBy(col("hour_activity_score").desc()).show(24, truncate=False)
+
+    date_activity = spark.sql(
+        "SELECT trade_date, "
+        "  SUM(trade_count) AS total_trades, "
+        "  SUM(quote_volume) AS total_quote_volume "
+        "FROM market_data "
+        "WHERE trade_date IS NOT NULL "
+        "GROUP BY trade_date"
+    )
+
+    date_activity = date_activity.withColumn(
+        "date_activity_score",
+        col("total_trades") * log(col("total_quote_volume") + lit(1))
+    )
+
+    busiest_date = date_activity.orderBy(col("date_activity_score").desc()).limit(1)
+
+    print("Activity by date:")
+    date_activity.orderBy(col("date_activity_score").desc()).show(10, truncate=False)
+    print("\n\nBusiest hour by activity_score:")
+    busiest_hour.show(1, truncate=False)
+    print("\nBusiest date by activity_score:")
+    busiest_date.show(1, truncate=False)
+
+    print(
+        "\nInterpretation:\n"
+        "Activity is defined consistently with Task 6 as a combined score "
+        "based on total trades and total quote volume. The log for quote volume is to "
+        "prevent very large volumes from dominating the score. The tables above show "
+        "how this activity_score varies by hour and by date. The busiest hour "
+        "and date are the time intervals with the highest activity_score in the "
+        "cleaned dataset, meaning they had both many trades and large quote "
+        "volume across all symbols."
+    )
+
 
     spark.stop()
     print("Spark session stopped.")
