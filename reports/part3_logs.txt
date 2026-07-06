@@ -123,4 +123,22 @@ Full Spark result uses all cleaned rows, not only 50 sample rows.
 
 Comparison with Team 2 pandas sample:
 Team 2 used a balanced 50-record pandas sample to check data quality. The Spark queries above use all cleaned rows for every symbol, so the average close, average volume, and row counts are based on the full dataset, not just a small subset. This makes the Spark results more reliable for analytics and ranking, because they capture all candles across all symbols and time periods. The same would work for larger datasets too.
+
+=== Task 5: Volatility Ranking ===
+
++--------+---------------+---------------+---------------+------------------+----+
+|symbol  |avg_price_range|min_price_range|max_price_range|stddev_price_range|rank|
++--------+---------------+---------------+---------------+------------------+----+
+|BTCUSDT |450.41         |59.07          |3254.17        |326.79            |1   |
+|ETHUSDT |15.84          |2.4            |108.08         |11.85             |2   |
+|BNBUSDT |4.66           |0.85           |40.99          |3.56              |3   |
+|SOLUSDT |0.8            |0.18           |4.41           |0.51              |4   |
+|AVAXUSDT|0.09           |0.02           |0.44           |0.06              |5   |
+|LINKUSDT|0.08           |0.01           |0.48           |0.05              |6   |
+|DOTUSDT |0.01           |0.0            |0.07           |0.01              |7   |
+|XRPUSDT |0.01           |0.0            |0.1            |0.01              |8   |
+|DOGEUSDT|0.0            |0.0            |0.01           |0.0               |9   |
+|ADAUSDT |0.0            |0.0            |0.01           |0.0               |10  |
++--------+---------------+---------------+---------------+------------------+----+
+
 Spark session stopped.

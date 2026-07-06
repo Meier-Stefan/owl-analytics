@@ -139,7 +139,29 @@ def main():
             "datasets too."
             )
 
+    from pyspark.sql.functions import row_number
+    from pyspark.sql.window import Window
 
+
+    print("\n=== Task 5: Volatility Ranking ===\n")
+    volatility = spark.sql(
+        "SELECT symbol, "
+        "  ROUND(AVG(price_range), 2) AS avg_price_range, "
+        "  ROUND(MIN(price_range), 2) AS min_price_range, "
+        "  ROUND(MAX(price_range), 2) AS max_price_range, "
+        "  ROUND(STDDEV(price_range), 2) AS stddev_price_range "
+        "FROM market_data "
+        "WHERE price_range IS NOT NULL "
+        "GROUP BY symbol "
+        "ORDER BY avg_price_range DESC"
+    )
+
+    volatility = volatility.withColumn(
+        "volatility_rank",
+        row_number().over(Window.orderBy(col("avg_price_range").desc()))
+    )
+
+    volatility.show(10, truncate=False)
 
     spark.stop()
     print("Spark session stopped.")
