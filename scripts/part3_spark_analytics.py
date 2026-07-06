@@ -84,6 +84,63 @@ def main():
     print("Example row:")
     example.show(1, truncate=False)
 
+
+    print("\n=== Task 4: Time Features and Full-Dataset Queries ===\n")
+    df = df.withColumn("trade_date", to_date("open_time"))
+    df = df.withColumn("trade_hour", hour("open_time"))
+    df = df.withColumn("day_of_week", date_format("open_time", "E"))
+    df.createOrReplaceTempView("market_data")
+    print("Created time features: trade_date, trade_hour, day_of_week")
+    print("Example row:")
+    df.select("open_time", "trade_date", "trade_hour", "day_of_week").show(1, truncate=False)
+
+    print("Average close price by symbol:")
+    avg_close = spark.sql(
+        "SELECT symbol, ROUND(AVG(close), 2) AS avg_close "
+        "FROM market_data "
+        "WHERE close IS NOT NULL "
+        "GROUP BY symbol "
+        "ORDER BY symbol"
+    )
+    avg_close.show(10, truncate=False)
+
+    print("Average volume by symbol:")
+    avg_volume = spark.sql(
+        "SELECT symbol, ROUND(AVG(volume), 2) AS avg_volume "
+        "FROM market_data "
+        "WHERE volume IS NOT NULL "
+        "GROUP BY symbol "
+        "ORDER BY symbol"
+    )
+    avg_volume.show(10, truncate=False)
+
+
+    print("Row count by symbol:")
+    symbol_counts = spark.sql(
+        "SELECT symbol, COUNT(*) AS row_count "
+        "FROM market_data "
+        "GROUP BY symbol "
+        "ORDER BY symbol"
+    )
+    symbol_counts.show(10, truncate=False)
+
+
+    print("Full Spark result uses all cleaned rows, not only 50 sample rows.")
+    sample_dir = Path("results/pandas_sample_results.csv")
+    if sample_dir.exists():
+        print(
+            "\nComparison with Team 2 pandas sample:\n"
+            "Team 2 used a balanced 50-record pandas sample to check data quality. "
+            "The Spark queries above use all cleaned rows for every symbol, so the "
+            "average close, average volume, and row counts are based on the full "
+            "dataset, not just a small subset. This makes the Spark results more "
+            "reliable for analytics and ranking, because they capture all candles "
+            "across all symbols and time periods. The same would work for larger "
+            "datasets too."
+            )
+
+
+
     spark.stop()
     print("Spark session stopped.")
 

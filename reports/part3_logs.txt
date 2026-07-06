@@ -60,4 +60,67 @@ Example row:
 |XRPUSDT|0.018100000000000005|-0.0042999999999999705|-0.41537867078825064|down            |
 +-------+--------------------+----------------------+--------------------+----------------+
 
+
+=== Task 4: Time Features and Full-Dataset Queries ===
+
+Created time features: trade_date, trade_hour, day_of_week
+Example row:
++-------------------+----------+----------+-----------+
+|open_time          |trade_date|trade_hour|day_of_week|
++-------------------+----------+----------+-----------+
+|2026-06-25 17:00:00|2026-06-25|17        |Thu        |
++-------------------+----------+----------+-----------+
+only showing top 1 row
+Average close price by symbol:
++--------+---------+
+|symbol  |avg_close|
++--------+---------+
+|ADAUSDT |0.18     |
+|AVAXUSDT|7.29     |
+|BNBUSDT |607.1    |
+|BTCUSDT |65744.08 |
+|DOGEUSDT|0.09     |
+|DOTUSDT |1.01     |
+|ETHUSDT |1775.28  |
+|LINKUSDT|8.15     |
+|SOLUSDT |73.65    |
+|XRPUSDT |1.18     |
++--------+---------+
+
+Average volume by symbol:
++--------+-------------+
+|symbol  |avg_volume   |
++--------+-------------+
+|ADAUSDT |6940687.79   |
+|AVAXUSDT|116021.26    |
+|BNBUSDT |7435.6       |
+|BTCUSDT |811.65       |
+|DOGEUSDT|2.646564732E7|
+|DOTUSDT |287253.11    |
+|ETHUSDT |13972.41     |
+|LINKUSDT|100690.93    |
+|SOLUSDT |114786.06    |
+|XRPUSDT |4191678.23   |
++--------+-------------+
+
+Row count by symbol:
++--------+---------+
+|symbol  |row_count|
++--------+---------+
+|ADAUSDT |970      |
+|AVAXUSDT|979      |
+|BNBUSDT |960      |
+|BTCUSDT |964      |
+|DOGEUSDT|979      |
+|DOTUSDT |966      |
+|ETHUSDT |980      |
+|LINKUSDT|973      |
+|SOLUSDT |979      |
+|XRPUSDT |963      |
++--------+---------+
+
+Full Spark result uses all cleaned rows, not only 50 sample rows.
+
+Comparison with Team 2 pandas sample:
+Team 2 used a balanced 50-record pandas sample to check data quality. The Spark queries above use all cleaned rows for every symbol, so the average close, average volume, and row counts are based on the full dataset, not just a small subset. This makes the Spark results more reliable for analytics and ranking, because they capture all candles across all symbols and time periods. The same would work for larger datasets too.
 Spark session stopped.
