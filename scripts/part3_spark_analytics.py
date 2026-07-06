@@ -163,6 +163,19 @@ def main():
 
     volatility.show(10, truncate=False)
 
+    print("\n=== Task 6: Activity Ranking ===\n")
+    activity = spark.sql(
+        "SELECT symbol, "
+        "  SUM(trade_count) AS total_trades, "
+        "  SUM(quote_volume) AS total_quote_volume, "
+        "  ROUND(AVG(volume), 2) AS avg_volume "
+        "FROM market_data "
+        "WHERE trade_count IS NOT NULL AND quote_volume IS NOT NULL "
+        "GROUP BY symbol "
+        "ORDER BY total_trades DESC"
+    )
+    activity.show(10, truncate=False)
+
     spark.stop()
     print("Spark session stopped.")
 
