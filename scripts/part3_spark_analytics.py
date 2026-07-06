@@ -13,7 +13,7 @@ from io_utils import _Tee
 CLEANED_CSV = CLEAN_DIR / "cleaned_market_data.csv"
 SUMMARY_CSV = RESULTS_DIR / "spark_market_summary.csv"
 
-PART3_LOGS = REPORTS_DIR / "part3_logs.md"
+PART3_LOGS = REPORTS_DIR / "part3_logs.txt"
 
 
 def main():
@@ -44,11 +44,45 @@ def main():
     df.createOrReplaceTempView("market_data")
     print("Temporary SQL view created: market_data")
     test_result = spark.sql("SELECT * FROM market_data LIMIT 10")
-    test_rows = test_result.count()
-    print(f"Test query returned rows: {test_rows}")
+    test_row_count = test_result.count()
+    print(f"Test query returned rows: {test_row_count}")
     print("Preview:")
     test_result.show(10, truncate=False)
 
+
+    print("\n=== Task 3: Verify Derived Columns ===\n")
+
+    derived = ["price_range", "price_change", "percent_change", "candle_direction"]
+    derived_cols = ", ".join(derived)
+    existing = [c for c in derived if c in df.columns]
+    missing = [c for c in derived if c not in df.columns]
+
+    if missing:
+        print(f"Adding missing columns: {', '.join(missing)}")
+        if "price_range" in missing:
+            df = df.withColumn("price_range", col("high") - col("low"))
+        if "price_change" in missing:
+            df = df.withColumn("price_change", col("close") - col("open"))
+        if "percent_change" in missing:
+            df = df.withColumn("percent_change", (col("close") - col("open")) / col("open") * 100)
+        if "candle_direction" in missing:
+            df = df.withColumn("candle_direction",
+                when(col("close") > col("open"), "up")
+                .when(col("close") < col("open"), "down")
+                .otherwise("flat"))
+    else:
+        print("All derived columns already exist")
+
+    df.createOrReplaceTempView("market_data")
+    print(f"Verified existing: {', '.join(existing)}")
+    print(f"Added missing: {', '.join(missing) if missing else 'none'}")
+
+    example = spark.sql(f"""
+    SELECT symbol, {derived_cols}
+    FROM market_data WHERE open IS NOT NULL LIMIT 1
+    """)
+    print("Example row:")
+    example.show(1, truncate=False)
 
     spark.stop()
     print("Spark session stopped.")
