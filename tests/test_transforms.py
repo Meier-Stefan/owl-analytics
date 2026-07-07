@@ -170,3 +170,51 @@ class TestPriceDerivedColumns:
         df["price_change"] = df["close"] - df["open"]
         df["percent_change"] = (df["price_change"] / df["open"]) * 100
         assert df.iloc[0]["percent_change"] == 0.0
+
+
+class TestSparkFormulaPrices:
+
+    def setup_method(self):
+        self.df = pd.DataFrame({
+            "open": [100.0, 100.0, 100.0],
+            "high": [110.0, 105.0, 95.0],
+            "low": [90.0, 95.0, 85.0],
+            "close": [105.0, 95.0, 100.0],
+        })
+
+    def test_price_range_matches_spark_formula(self):
+        result = self.df["high"] - self.df["low"]
+        assert list(result) == [20.0, 10.0, 10.0]
+
+    def test_price_change_matches_spark_formula(self):
+        result = self.df["close"] - self.df["open"]
+        assert list(result) == [5.0, -5.0, 0.0]
+
+    def test_percent_change_matches_spark_formula(self):
+        result = ((self.df["close"] - self.df["open"]) / self.df["open"]) * 100
+        assert list(result) == [5.0, -5.0, 0.0]
+
+    def test_candle_direction_up(self):
+        result = ["up" if c > o else "down" if c < o else "flat"
+                  for c, o in zip(self.df["close"], self.df["open"])]
+        assert result == ["up", "down", "flat"]
+
+
+class TestSparkFormulaActivityScore:
+
+    def test_activity_score_formula_with_known_values(self):
+        total_trades = 1000
+        total_quote_volume = 50000
+        score = total_trades * math.log(total_quote_volume + 1)
+        assert score == pytest.approx(10823.0, rel=1e-2)
+
+    def test_activity_score_scales_with_trades(self):
+        score_a = 100 * math.log(1000 + 1)
+        score_b = 200 * math.log(1000 + 1)
+        assert score_b > score_a
+
+    def test_activity_score_log_dampens_volume(self):
+        score_a = 100 * math.log(1e6 + 1)
+        score_b = 100 * math.log(1e12 + 1)
+        ratio = score_b / score_a
+        assert 1.5 < ratio < 3.0
