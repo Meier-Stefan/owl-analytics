@@ -119,6 +119,7 @@ Row count by symbol:
 |XRPUSDT |963      |
 +--------+---------+
 
+Registered temp view: symbol_counts
 Full Spark result uses all cleaned rows, not only 50 sample rows.
 
 Comparison with Team 2 pandas sample:
@@ -141,6 +142,7 @@ Team 2 used a balanced 50-record pandas sample to check data quality. The Spark 
 |ADAUSDT |0.0            |0.0            |0.01           |0.0               |10             |
 +--------+---------------+---------------+---------------+------------------+---------------+
 
+Registered temp view: volatility_results
 
 === Task 6: Activity Ranking ===
 
@@ -159,6 +161,7 @@ Team 2 used a balanced 50-record pandas sample to check data quality. The Spark 
 |DOTUSDT |1547481.0   |2.7616957910738E8   |288153.77    |3.007765415817925E7  |10                  |
 +--------+------------+--------------------+-------------+---------------------+--------------------+
 
+Registered temp view: activity_results
 
 === Task 7: Activity by Time ===
 
@@ -228,4 +231,28 @@ Busiest date by activity_score:
 
 Interpretation:
 Activity is defined consistently with Task 6 as a combined score based on total trades and total quote volume. The log for quote volume is to prevent very large volumes from dominating the score. The tables above show how this activity_score varies by hour and by date. The busiest hour and date are the time intervals with the highest activity_score in the cleaned dataset, meaning they had both many trades and large quote volume across all symbols.
+
+=== Task 8: Final Ranked Market Summary ===
+
++--------+---------+---------------+---------------+---------------+------------------+---------------+------------+--------------------+-------------+---------------------+--------------------+------------------+--------+----------+----------+
+|symbol  |row_count|avg_price_range|min_price_range|max_price_range|stddev_price_range|volatility_rank|total_trades|total_quote_volume  |avg_volume   |symbol_activity_score|symbol_activity_rank|avg_percent_change|up_count|down_count|flat_count|
++--------+---------+---------------+---------------+---------------+------------------+---------------+------------+--------------------+-------------+---------------------+--------------------+------------------+--------+----------+----------+
+|BTCUSDT |964      |450.41         |59.07          |3254.17        |326.79            |1              |1.5333863E8 |4.924647359538412E10|814.13       |3.7752129564662867E9 |1                   |-0.02             |452     |497       |1         |
+|ETHUSDT |980      |15.84          |2.4            |108.08         |11.85             |2              |1.45277925E8|2.353234432537225E10|14040.31     |3.4694753468449636E9 |2                   |-0.02             |461     |494       |1         |
+|SOLUSDT |979      |0.8            |0.18           |4.41           |0.51              |4              |3.8478717E7 |7.798834145565394E9 |115167.85    |8.764389755057751E8  |3                   |0.0               |477     |479       |8         |
+|BNBUSDT |960      |4.66           |0.85           |40.99          |3.56              |3              |3.5593173E7 |4.267049276199123E9 |7477.96      |7.892497234830228E8  |4                   |-0.01             |478     |473       |1         |
+|XRPUSDT |963      |0.01           |0.0            |0.1            |0.01              |8              |2.869181E7  |4.576616481885374E9 |4172477.9    |6.382271003327602E8  |5                   |-0.03             |448     |492       |8         |
+|DOGEUSDT|979      |0.0            |0.0            |0.01           |0.0               |9              |2.5094224E7 |2.2079640306546893E9|2.656016772E7|5.399106779633135E8  |6                   |-0.03             |479     |480       |9         |
+|AVAXUSDT|979      |0.09           |0.02           |0.44           |0.06              |5              |9952454.0   |7.7873306980404E8   |116303.75    |2.0375837112549084E8 |7                   |-0.03             |467     |486       |8         |
+|LINKUSDT|973      |0.08           |0.01           |0.48           |0.05              |6              |6125527.0   |7.786226249349114E8 |101032.4     |1.2540814123700231E8 |8                   |-0.03             |466     |487       |9         |
+|ADAUSDT |970      |0.0            |0.0            |0.01           |0.0               |10             |4781555.0   |1.1496925852154512E9|6942934.25   |9.975643643472798E7  |9                   |-0.03             |454     |469       |30        |
+|DOTUSDT |966      |0.01           |0.0            |0.07           |0.01              |7              |1547481.0   |2.7616957910738E8   |288153.77    |3.007765415817925E7  |10                  |-0.05             |432     |444       |72        |
++--------+---------+---------------+---------------+---------------+------------------+---------------+------------+--------------------+-------------+---------------------+--------------------+------------------+--------+----------+----------+
+
+Saved: results/spark_market_summary.csv
+Final ranked market summary created
+Rows in summary: 10
+Top activity symbol: BTCUSDT (highest combined trades and quote volume).
+Top volatility symbol: BTCUSDT (largest average price range and volatility rank).
+In this summary table, activity_score is defined as total_trades * log(total_quote_volume + 1). This means symbols with many trades and high quote volume rank as more active, but taking the log of quote volume prevents a few very large volumes from dominating the score. For each symbol, the table also shows how many records were in the cleaned dataset, average volume, volatility statistics based on price_range, and how often candles closed up, down, or flat. This helps Zehra see which symbols are most active, most volatile, and most important to mention in the final report.
 Spark session stopped.

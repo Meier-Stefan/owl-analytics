@@ -4,7 +4,7 @@ from pathlib import Path
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     col, avg, min as spark_min, max as spark_max, stddev,
-    sum as spark_sum, to_date, hour, date_format, count, when, lit, log
+    sum as spark_sum, to_date, hour, date_format, count, when, lit, log,
 )
 
 from config import CLEAN_DIR, RESULTS_DIR, REPORTS_DIR
@@ -123,6 +123,8 @@ def main():
         "ORDER BY symbol"
     )
     symbol_counts.show(10, truncate=False)
+    symbol_counts.createOrReplaceTempView("symbol_counts")
+    print("Registered temp view: symbol_counts")
 
 
     print("Full Spark result uses all cleaned rows, not only 50 sample rows.")
@@ -162,6 +164,8 @@ def main():
     )
 
     volatility.show(10, truncate=False)
+    volatility.createOrReplaceTempView("volatility_results")
+    print("Registered temp view: volatility_results")
 
     print("\n=== Task 6: Activity Ranking ===\n")
     activity = spark.sql(
@@ -185,7 +189,8 @@ def main():
     )
     
     activity.orderBy(col("symbol_activity_score").desc()).show(10, truncate=False)
-    
+    activity.createOrReplaceTempView("activity_results")
+    print("Registered temp view: activity_results")
 
     print("\n=== Task 7: Activity by Time ===\n")
 
@@ -241,6 +246,75 @@ def main():
         "cleaned dataset, meaning they had both many trades and large quote "
         "volume across all symbols."
     )
+
+
+    print("\n=== Task 8: Final Ranked Market Summary ===\n")
+    summary = spark.sql(
+        "SELECT "
+        "  v.symbol, "
+        "  rc.row_count, "
+        "  v.avg_price_range, "
+        "  v.min_price_range, "
+        "  v.max_price_range, "
+        "  v.stddev_price_range, "
+        "  v.volatility_rank, "
+        "  a.total_trades, "
+        "  a.total_quote_volume, "
+        "  a.avg_volume, "
+        "  a.symbol_activity_score, "
+        "  a.symbol_activity_rank, "
+        "  ROUND(AVG(m.percent_change), 2) AS avg_percent_change, "
+        "  SUM(CASE WHEN m.candle_direction = 'up' THEN 1 ELSE 0 END) AS up_count, "
+        "  SUM(CASE WHEN m.candle_direction = 'down' THEN 1 ELSE 0 END) AS down_count, "
+        "  SUM(CASE WHEN m.candle_direction = 'flat' THEN 1 ELSE 0 END) AS flat_count "
+        "FROM market_data m "
+        "JOIN volatility_results v ON m.symbol = v.symbol "
+        "JOIN activity_results a ON m.symbol = a.symbol "
+        "JOIN symbol_counts rc ON m.symbol = rc.symbol "
+        "WHERE m.percent_change IS NOT NULL AND m.candle_direction IS NOT NULL "
+        "GROUP BY v.symbol, rc.row_count, v.avg_price_range, v.min_price_range, "
+        "         v.max_price_range, v.stddev_price_range, v.volatility_rank, "
+        "         a.total_trades, a.total_quote_volume, a.avg_volume, "
+        "         a.symbol_activity_score, a.symbol_activity_rank "
+        "ORDER BY a.symbol_activity_rank"
+    )
+    summary.show(10, truncate=False)
+
+    top_activity_row = summary.orderBy("symbol_activity_rank").first()
+    top_volatility_row = summary.orderBy("volatility_rank").first()
+    assert top_activity_row is not None and top_volatility_row is not None
+    top_activity = top_activity_row["symbol"]
+    top_volatility = top_volatility_row["symbol"]
+
+
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    summary.toPandas().to_csv(SUMMARY_CSV, index=False)
+    print(f"Saved: {SUMMARY_CSV}")
+    print("Final ranked market summary created")
+    print(f"Rows in summary: {summary.count()}")
+
+    print(
+    f"Top activity symbol: {top_activity} "
+    f"(highest combined trades and quote volume)."
+    )
+    print(
+    f"Top volatility symbol: {top_volatility} "
+    f"(largest average price range and volatility rank)."
+    )
+    print(
+    "In this summary table, activity_score is defined as "
+    "total_trades * log(total_quote_volume + 1). "
+    "This means symbols with many trades "
+    "and high quote volume rank as more active, but taking the log of "
+    "quote volume prevents a few very large volumes from dominating the "
+    "score. For each symbol, the table also shows how many records were "
+    "in the cleaned dataset, average volume, volatility statistics based "
+    "on price_range, and how often candles closed up, down, or flat. "
+    "This helps Zehra see which symbols are most active, most volatile, "
+    "and most important to mention in the final report."
+)
+
+
 
 
     spark.stop()
