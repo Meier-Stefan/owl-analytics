@@ -8,3 +8,7 @@ dependencies = [
     "pyspark>=4.1.0",
     "requests>=2.34.2",
 ]
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::pandas.errors.Pandas4Warning",
+]
