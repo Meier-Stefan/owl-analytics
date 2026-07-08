@@ -37,7 +37,7 @@ The ranked market summary revealed the following:
 - Average percent change: All symbols showed a slightly negative average percent change per hour (around −0.02% to −0.05%), with `SOLUSDT` the only symbol averaging 0.0%, suggesting a relatively flat period overall. `DOTUSDT` had the most bearish average at −0.05%.  
 The full ranked summary has been saved to `results/spark_market_summary.csv` for further inspection.
 
-Thank you so much for the opportunity to explore the full lifecycle of a data pipeline experience work in the different teams. Even though both project contained data pipelines, this experience with the focus on big data processing was different from the [SpeechSense group project](thttps://github.com/SpeechSense/SpeechSense), where the delivery of a product and collaboration was in the foreground.
+Thank you so much for the opportunity to explore the full lifecycle of a data pipeline experience work in the different teams. Even though both project contained data pipelines, this experience with the focus on big data processing was different from the [SpeechSense group project](https://github.com/SpeechSense/SpeechSense), where the delivery of a product and collaboration was in the foreground.
 
 Best,
 Stefan
