@@ -1,63 +1,83 @@
-2026-06-30T13:11:38Z | Symbols configured: 10
-2026-06-30T13:11:38Z | Interval: 1h
-2026-06-30T13:11:38Z | Limit per symbol: 1000
-2026-06-30T13:11:38Z | Expected records: 10000
-2026-06-30T13:11:38Z | Created folders: data/clean, results
-2026-06-30T13:11:38Z | Starting serial download for 10 symbols
-2026-06-30T13:11:38Z | START request symbol=BTCUSDT interval=1h limit=1000
-2026-06-30T13:11:40Z | Downloaded BTCUSDT: 1000 records
-2026-06-30T13:11:40Z | START request symbol=ETHUSDT interval=1h limit=1000
-2026-06-30T13:11:41Z | Downloaded ETHUSDT: 1000 records
-2026-06-30T13:11:41Z | START request symbol=BNBUSDT interval=1h limit=1000
-2026-06-30T13:11:43Z | Downloaded BNBUSDT: 1000 records
-2026-06-30T13:11:43Z | START request symbol=SOLUSDT interval=1h limit=1000
-2026-06-30T13:11:44Z | Downloaded SOLUSDT: 1000 records
-2026-06-30T13:11:44Z | START request symbol=XRPUSDT interval=1h limit=1000
-2026-06-30T13:11:46Z | Downloaded XRPUSDT: 1000 records
-2026-06-30T13:11:46Z | START request symbol=ADAUSDT interval=1h limit=1000
-2026-06-30T13:11:47Z | Downloaded ADAUSDT: 1000 records
-2026-06-30T13:11:47Z | START request symbol=DOGEUSDT interval=1h limit=1000
-2026-06-30T13:11:49Z | Downloaded DOGEUSDT: 1000 records
-2026-06-30T13:11:49Z | START request symbol=AVAXUSDT interval=1h limit=1000
-2026-06-30T13:11:50Z | Downloaded AVAXUSDT: 1000 records
-2026-06-30T13:11:50Z | START request symbol=LINKUSDT interval=1h limit=1000
-2026-06-30T13:11:52Z | Downloaded LINKUSDT: 1000 records
-2026-06-30T13:11:52Z | START request symbol=DOTUSDT interval=1h limit=1000
-2026-06-30T13:11:53Z | Downloaded DOTUSDT: 1000 records
-2026-06-30T13:11:53Z | Serial download complete: 10000 records, 0 failures in 15.1819s
-2026-06-30T13:11:53Z | Starting multithreaded download for 10 symbols
-2026-06-30T13:11:53Z | START request symbol=BTCUSDT interval=1h limit=1000
-2026-06-30T13:11:53Z | START request symbol=ETHUSDT interval=1h limit=1000
-2026-06-30T13:11:53Z | START request symbol=BNBUSDT interval=1h limit=1000
-2026-06-30T13:11:53Z | START request symbol=SOLUSDT interval=1h limit=1000
-2026-06-30T13:11:53Z | START request symbol=XRPUSDT interval=1h limit=1000
-2026-06-30T13:11:55Z | Downloaded SOLUSDT: 1000 records
-2026-06-30T13:11:55Z | START request symbol=ADAUSDT interval=1h limit=1000
-2026-06-30T13:11:55Z | Downloaded BNBUSDT: 1000 records
-2026-06-30T13:11:55Z | START request symbol=DOGEUSDT interval=1h limit=1000
-2026-06-30T13:11:55Z | Downloaded ETHUSDT: 1000 records
-2026-06-30T13:11:55Z | START request symbol=AVAXUSDT interval=1h limit=1000
-2026-06-30T13:11:55Z | Downloaded BTCUSDT: 1000 records
-2026-06-30T13:11:55Z | START request symbol=LINKUSDT interval=1h limit=1000
-2026-06-30T13:11:55Z | Downloaded XRPUSDT: 1000 records
-2026-06-30T13:11:55Z | START request symbol=DOTUSDT interval=1h limit=1000
-2026-06-30T13:11:56Z | Downloaded ADAUSDT: 1000 records
-2026-06-30T13:11:56Z | Downloaded DOGEUSDT: 1000 records
-2026-06-30T13:11:56Z | Downloaded AVAXUSDT: 1000 records
-2026-06-30T13:11:56Z | Downloaded LINKUSDT: 1000 records
-2026-06-30T13:11:56Z | Downloaded DOTUSDT: 1000 records
-2026-06-30T13:11:56Z | Multithreaded download complete: 10000 records, 0 failures
-2026-06-30T13:11:56Z | WROTE csv=data/clean/clean_market_data.csv records=10000
-2026-06-30T13:11:56Z | Saved: data/clean/clean_market_data.csv
-2026-06-30T13:11:56Z | Total records saved: 10000
-2026-06-30T13:11:56Z | Record count check: passed
-2026-06-30T13:11:56Z | Request limit: 100 requests per minute
-2026-06-30T13:11:56Z | Current request batch allowed
-2026-06-30T13:11:56Z | Rate-limit wait events logged: 0
-2026-06-30T13:11:56Z | Runtime comparison
-2026-06-30T13:11:56Z | serial_seconds: 15.1819
-2026-06-30T13:11:56Z | multithreading_seconds: 3.1874
-2026-06-30T13:11:56Z | Saved: results/runtime_comparison.csv
-2026-06-30T13:11:56Z | Script completed successfully
-2026-06-30T13:11:56Z | Output files found: 3
-2026-06-30T13:11:56Z | No price analytics were calculated in Team 1
+2026-07-03T08:59:21Z | Symbols configured: 10
+2026-07-03T08:59:21Z | Interval: 1h
+2026-07-03T08:59:21Z | Limit per symbol: 1000
+2026-07-03T08:59:21Z | Expected records: 10000
+2026-07-03T08:59:21Z | Created folders: data/clean, results
+2026-07-03T08:59:21Z | Starting serial download for 10 symbols
+2026-07-03T08:59:21Z | START request symbol=BTCUSDT interval=1h limit=1000
+2026-07-03T08:59:23Z | END request symbol=BTCUSDT records=1000
+2026-07-03T08:59:23Z | Downloaded BTCUSDT: 1000 records
+2026-07-03T08:59:23Z | START request symbol=ETHUSDT interval=1h limit=1000
+2026-07-03T08:59:24Z | END request symbol=ETHUSDT records=1000
+2026-07-03T08:59:24Z | Downloaded ETHUSDT: 1000 records
+2026-07-03T08:59:24Z | START request symbol=BNBUSDT interval=1h limit=1000
+2026-07-03T08:59:26Z | END request symbol=BNBUSDT records=1000
+2026-07-03T08:59:26Z | Downloaded BNBUSDT: 1000 records
+2026-07-03T08:59:26Z | START request symbol=SOLUSDT interval=1h limit=1000
+2026-07-03T08:59:28Z | END request symbol=SOLUSDT records=1000
+2026-07-03T08:59:28Z | Downloaded SOLUSDT: 1000 records
+2026-07-03T08:59:28Z | START request symbol=XRPUSDT interval=1h limit=1000
+2026-07-03T08:59:30Z | END request symbol=XRPUSDT records=1000
+2026-07-03T08:59:30Z | Downloaded XRPUSDT: 1000 records
+2026-07-03T08:59:30Z | START request symbol=ADAUSDT interval=1h limit=1000
+2026-07-03T08:59:31Z | END request symbol=ADAUSDT records=1000
+2026-07-03T08:59:31Z | Downloaded ADAUSDT: 1000 records
+2026-07-03T08:59:31Z | START request symbol=DOGEUSDT interval=1h limit=1000
+2026-07-03T08:59:33Z | END request symbol=DOGEUSDT records=1000
+2026-07-03T08:59:33Z | Downloaded DOGEUSDT: 1000 records
+2026-07-03T08:59:33Z | START request symbol=AVAXUSDT interval=1h limit=1000
+2026-07-03T08:59:35Z | END request symbol=AVAXUSDT records=1000
+2026-07-03T08:59:35Z | Downloaded AVAXUSDT: 1000 records
+2026-07-03T08:59:35Z | START request symbol=LINKUSDT interval=1h limit=1000
+2026-07-03T08:59:37Z | END request symbol=LINKUSDT records=1000
+2026-07-03T08:59:37Z | Downloaded LINKUSDT: 1000 records
+2026-07-03T08:59:37Z | START request symbol=DOTUSDT interval=1h limit=1000
+2026-07-03T08:59:38Z | END request symbol=DOTUSDT records=1000
+2026-07-03T08:59:38Z | Downloaded DOTUSDT: 1000 records
+2026-07-03T08:59:38Z | Serial download complete: 10000 records, 0 failures in 17.2300s
+2026-07-03T08:59:38Z | Starting multithreaded download for 10 symbols
+2026-07-03T08:59:38Z | START request symbol=BTCUSDT interval=1h limit=1000
+2026-07-03T08:59:38Z | START request symbol=XRPUSDT interval=1h limit=1000
+2026-07-03T08:59:38Z | START request symbol=BNBUSDT interval=1h limit=1000
+2026-07-03T08:59:38Z | START request symbol=SOLUSDT interval=1h limit=1000
+2026-07-03T08:59:38Z | START request symbol=ETHUSDT interval=1h limit=1000
+2026-07-03T08:59:40Z | END request symbol=XRPUSDT records=1000
+2026-07-03T08:59:40Z | Downloaded XRPUSDT: 1000 records
+2026-07-03T08:59:40Z | END request symbol=BNBUSDT records=1000
+2026-07-03T08:59:40Z | Downloaded BNBUSDT: 1000 records
+2026-07-03T08:59:40Z | START request symbol=ADAUSDT interval=1h limit=1000
+2026-07-03T08:59:40Z | END request symbol=SOLUSDT records=1000
+2026-07-03T08:59:40Z | Downloaded SOLUSDT: 1000 records
+2026-07-03T08:59:40Z | START request symbol=DOGEUSDT interval=1h limit=1000
+2026-07-03T08:59:40Z | START request symbol=AVAXUSDT interval=1h limit=1000
+2026-07-03T08:59:41Z | END request symbol=BTCUSDT records=1000
+2026-07-03T08:59:41Z | Downloaded BTCUSDT: 1000 records
+2026-07-03T08:59:41Z | START request symbol=LINKUSDT interval=1h limit=1000
+2026-07-03T08:59:42Z | END request symbol=ADAUSDT records=1000
+2026-07-03T08:59:42Z | Downloaded ADAUSDT: 1000 records
+2026-07-03T08:59:42Z | START request symbol=DOTUSDT interval=1h limit=1000
+2026-07-03T08:59:42Z | END request symbol=AVAXUSDT records=1000
+2026-07-03T08:59:42Z | Downloaded AVAXUSDT: 1000 records
+2026-07-03T08:59:42Z | END request symbol=DOGEUSDT records=1000
+2026-07-03T08:59:42Z | Downloaded DOGEUSDT: 1000 records
+2026-07-03T08:59:42Z | END request symbol=ETHUSDT records=1000
+2026-07-03T08:59:42Z | Downloaded ETHUSDT: 1000 records
+2026-07-03T08:59:42Z | END request symbol=LINKUSDT records=1000
+2026-07-03T08:59:42Z | Downloaded LINKUSDT: 1000 records
+2026-07-03T08:59:43Z | END request symbol=DOTUSDT records=1000
+2026-07-03T08:59:43Z | Downloaded DOTUSDT: 1000 records
+2026-07-03T08:59:43Z | Multithreaded download complete: 10000 records, 0 failures
+2026-07-03T08:59:43Z | WROTE csv=data/clean/clean_market_data.csv records=10000
+2026-07-03T08:59:43Z | Saved: data/clean/clean_market_data.csv
+2026-07-03T08:59:43Z | Total records saved: 10000
+2026-07-03T08:59:43Z | Record count check: passed
+2026-07-03T08:59:43Z | Request limit: 100 requests per minute
+2026-07-03T08:59:43Z | Current request batch allowed
+2026-07-03T08:59:43Z | Rate-limit wait events logged: 0
+2026-07-03T08:59:43Z | Runtime comparison
+2026-07-03T08:59:43Z | serial_seconds: 17.23
+2026-07-03T08:59:43Z | multithreading_seconds: 4.9779
+2026-07-03T08:59:43Z | Saved: results/runtime_comparison.csv
+2026-07-03T08:59:43Z | Script completed successfully
+2026-07-03T08:59:43Z | Output files found: 3
+2026-07-03T08:59:43Z | No price analytics were calculated in Team 1

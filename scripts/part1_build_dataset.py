@@ -9,28 +9,17 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 
+from config import (
+    SYMBOLS, INTERVAL, LIMIT, BASE_URL, RATE_LIMIT, RATE_WINDOW,
+    MAX_WORKERS, CLEAN_DIR, RESULTS_DIR, REPORTS_DIR, FIELDNAMES,
+)
+from io_utils import _Tee
 
-SYMBOLS = [
-    "BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT",
-    "ADAUSDT", "DOGEUSDT", "AVAXUSDT", "LINKUSDT", "DOTUSDT",
-]
-INTERVAL = "1h"
-LIMIT = 1000
-BASE_URL = "https://data-api.binance.vision/api/v3/klines"
-REQUESTS_PER_MINUTE = 100
-
-CLEAN_DIR = Path("data/clean")
-RESULTS_DIR = Path("results")
 OUTPUT_CSV = CLEAN_DIR / "clean_market_data.csv"
 LOG_FILE = RESULTS_DIR / "api_download.log"
 BENCHMARK_CSV = RESULTS_DIR / "runtime_comparison.csv"
-MAX_WORKERS = 5
 
-FIELDNAMES = [
-    "symbol", "interval", "open_time", "open", "high", "low", "close",
-    "volume", "close_time", "quote_volume", "trade_count",
-    "taker_buy_base_volume", "taker_buy_quote_volume",
-]
+PART1_LOGS = REPORTS_DIR / "part1_logs.txt"
 
 
 def convert_timestamp(ms):
@@ -50,8 +39,9 @@ def print_and_log(log_lock, message):
 
 
 class RateLimiter:
-    def __init__(self, max_per_minute, log_lock=None):
+    def __init__(self, max_per_minute, log_lock=None, window=60.0):
         self.max_per_minute = max_per_minute
+        self._window = window
         self._log_lock = log_lock
         self._lock = Lock()
         self._timestamps = []
@@ -60,7 +50,7 @@ class RateLimiter:
     def acquire(self):
         with self._lock:
             now = time.monotonic()
-            cutoff = now - 60.0
+            cutoff = now - self._window
             self._timestamps = [t for t in self._timestamps if t > cutoff]
 
             if len(self._timestamps) >= self.max_per_minute:
@@ -169,6 +159,13 @@ def main():
     with open(LOG_FILE, "w", encoding="utf-8") as f:
         f.write("")
 
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    _report_file = open(PART1_LOGS, "w", encoding="utf-8")
+    _old_stdout = sys.stdout
+    sys.stdout = _Tee(_report_file)
+
+    print()
+    print_and_log(log_lock, "\n===Task 1: API Configuration ===\n" )
     print_and_log(log_lock, f"Symbols configured: {len(SYMBOLS)}")
     print_and_log(log_lock, f"Interval: {INTERVAL}")
     print_and_log(log_lock, f"Limit per symbol: {LIMIT}")
@@ -179,32 +176,43 @@ def main():
     print_and_log(log_lock, f"Created folders: {CLEAN_DIR}, {RESULTS_DIR}")
 
     print()
+    print_and_log(log_lock, "\n===Task 6: Download Benchmark ===\n" )
     print_and_log(log_lock, "Starting serial download for 10 symbols")
     serial_start = time.perf_counter()
-    serial_rows, serial_failures = download_serial(SYMBOLS, RateLimiter(REQUESTS_PER_MINUTE, log_lock), log_lock, Semaphore(5))
+    serial_rows, serial_failures = download_serial(SYMBOLS, RateLimiter(RATE_LIMIT, log_lock, RATE_WINDOW), log_lock, Semaphore(5))
     serial_time = time.perf_counter() - serial_start
     print_and_log(log_lock, f"Serial download complete: {len(serial_rows)} records, {serial_failures} failures in {serial_time:.4f}s")
 
     print()
+    print_and_log(log_lock, "\n===Task 3: Multithreaded Download ===\n" )
     print_and_log(log_lock, "Starting multithreaded download for 10 symbols")
-    mt_rate_limiter = RateLimiter(REQUESTS_PER_MINUTE, log_lock)
+    mt_rate_limiter = RateLimiter(RATE_LIMIT, log_lock, RATE_WINDOW)
     mt_start = time.perf_counter()
     mt_rows, mt_failures = download_multithreaded(SYMBOLS, mt_rate_limiter, log_lock, Semaphore(5))
     mt_time = time.perf_counter() - mt_start
     print_and_log(log_lock, f"Multithreaded download complete: {len(mt_rows)} records, {mt_failures} failures")
 
+    print()
+    print_and_log(log_lock, "\n===Task 2: Combined CSV Dataset ===\n" )
     write_csv(OUTPUT_CSV, FIELDNAMES, mt_rows)
     log_message(log_lock, f"WROTE csv={OUTPUT_CSV} records={len(mt_rows)}")
-    print()
     print_and_log(log_lock, f"Saved: {OUTPUT_CSV}")
     print_and_log(log_lock, f"Total records saved: {len(mt_rows)}")
 
     check = "passed" if len(mt_rows) == len(SYMBOLS) * LIMIT else "failed"
     print_and_log(log_lock, f"Record count check: {check}")
 
-    print_and_log(log_lock, f"Request limit: {REQUESTS_PER_MINUTE} requests per minute")
+    print()
+    print_and_log(log_lock, "\n===Task 4: Rate Limiting ===\n" )
+    print_and_log(log_lock, f"Request limit: {RATE_LIMIT} requests per minute")
     print_and_log(log_lock, "Current request batch allowed")
     print_and_log(log_lock, f"Rate-limit wait events logged: {mt_rate_limiter.wait_count}")
+
+    print()
+    print_and_log(log_lock, "\n===Task 5: Log File ===\n" )
+    log_message(log_lock, f"Log file: {LOG_FILE}")
+    print_and_log(log_lock, f"Log file created: {LOG_FILE}")
+    print_and_log(log_lock, "All requests logged with START / END / WROTE markers")
 
     benchmark_rows = [
         {
@@ -222,7 +230,7 @@ def main():
     ]
     write_csv(BENCHMARK_CSV, ["method", "seconds", "records", "note"], benchmark_rows)
     print()
-    print_and_log(log_lock, "Runtime comparison")
+    print_and_log(log_lock, "\n===Benchmark Results ===\n" )
     print_and_log(log_lock, f"serial_seconds: {round(serial_time, 4)}")
     print_and_log(log_lock, f"multithreading_seconds: {round(mt_time, 4)}")
     print_and_log(log_lock, f"Saved: {BENCHMARK_CSV}")
@@ -235,11 +243,19 @@ def main():
         sys.exit(1)
 
     print()
+    print_and_log(log_lock, "\n===Task 7: Script Completion ===\n" )
     print_and_log(log_lock, "Script completed successfully")
     output_files = [OUTPUT_CSV, LOG_FILE, BENCHMARK_CSV]
     existing = [p for p in output_files if p.exists()]
     print_and_log(log_lock, f"Output files found: {len(existing)}")
     print_and_log(log_lock, "No price analytics were calculated in Team 1")
+
+    sys.stdout.flush()
+    _report_file.flush()
+    sys.stdout = _old_stdout
+    _report_file.close()
+
+    print(f"Report saved: {PART1_LOGS}")
 
 
 if __name__ == "__main__":

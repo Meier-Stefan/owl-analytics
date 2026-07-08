@@ -1,0 +1,132 @@
+Team 2: Data Quality
+==================================================
+
+=== Task 1: Load and Inspect ===
+Loaded data/messy/messy_market_data.csv
+Rows: 9991
+Columns: 13
+
+First 10 rows:
+   symbol interval                 open_time    open    high     low   close    volume                       close_time    quote_volume trade_count taker_buy_base_volume taker_buy_quote_volume
+ XRPUSDT        1h 2026-06-25T16:00:00+00:00  1.0352  1.0447  1.0266  1.0309 8963029.5 2026-06-25T16:59:59.999000+00:00   9267031.02897       54394             4688031.3          4846871.63099
+  BNBUSDT       1h 2026-06-20T02:00:00+00:00  581.25  581.48  580.13  580.18  2973.671 2026-06-20T02:59:59.999000+00:00   1726742.92021       10958              1559.662           905640.39457
+  ETHUSDT       1h 2026-06-09T11:00:00+00:00 1674.72 1675.46 1666.12 1671.96 7742.4269 2026-06-09T11:59:59.999000+00:00 12936135.286707       99813              3146.887         5257486.887434
+ LINKUSDT       1h 2026-05-27T07:00:00+00:00   9.437   9.449   9.405   9.441   48682.8 2026-05-27T07:59:59.999000+00:00    458882.17239        4258              21487.55           202522.19315
+  DOTUSDT       1h 2026-05-30T17:00:00+00:00     1.2   1.201    1.19   1.197 258566.61 2026-05-30T17:59:59.999000+00:00    309215.62775        1090              95675.64           114387.30161
+  ADAUSDT       1h 2026-06-13T03:00:00+00:00  0.1719  0.1722    0.17  0.1704 6259164.4 2026-06-13T03:59:59.999000+00:00   1070665.05854        3665             3082618.8           527298.50084
+ linkusdt       1h 2026-06-02T04:00:00+00:00   9.017   9.031   8.946   8.947 105055.56 2026-06-02T04:59:59.999000+00:00    943239.37485        7181              39115.76           351122.31328
+ LINKUSDT       1h 2026-06-26T22:00:00+00:00   7.312   7.358    7.29   7.355  51600.21 2026-06-26T22:59:59.999000+00:00     377570.3712        2763              30917.61            226292.3749
+  ADAUSDT       1h 2026-06-17T23:00:00+00:00  0.1667  0.1674  0.1663  0.1669 4046870.3 2026-06-17T23:59:59.999000+00:00    675044.50481        2901             2363964.3           394334.32661
+  SOLUSDT       1h 2026-06-15T23:00:00+00:00   73.77   74.07   73.62   73.98 75389.572 2026-06-15T23:59:59.999000+00:00   5566102.51098       30951              34663.66          2559801.86089
+
+Data types:
+symbol                    str
+interval                  str
+open_time                 str
+open                      str
+high                      str
+low                       str
+close                     str
+volume                    str
+close_time                str
+quote_volume              str
+trade_count               str
+taker_buy_base_volume     str
+taker_buy_quote_volume    str
+
+=== Task 2: Missing Values ===
+Missing values:
+open_time                 47
+open                      38
+high                      57
+low                       41
+close                     36
+volume                    41
+close_time                58
+quote_volume              51
+trade_count               44
+taker_buy_base_volume     43
+taker_buy_quote_volume    40
+Most affected column: close_time
+
+=== Task 3: Numeric Conversion ===
+Converted numeric columns:
+open, high, low, close, volume, quote_volume, trade_count, taker_buy_base_volume, taker_buy_quote_volume
+Invalid numeric rows after conversion: 399
+
+=== Task 4: Timestamp and Symbol Cleaning ===
+Converted timestamp columns:
+open_time, close_time
+Invalid open_time values: 152
+Invalid close_time values: 147
+
+Symbols before cleaning:
+ XRPUSDT , BNBUSDT, ETHUSDT, LINKUSDT, DOTUSDT, ADAUSDT, linkusdt, SOLUSDT, DOGEUSDT, XRPUSDT, BTCUSDT, AVAXUSDT,  BTCUSDT , AVAX/USDT, XRP/USDT,  AVAXUSDT , SOL/USDT, BTC/USDT,  SOLUSDT , DOT/USDT, dogeusdt, dotusdt, btcusdt, ethusdt,  ADAUSDT , DOGE/USDT, BNB/USDT, ETH/USDT, ADA/USDT, bnbusdt, solusdt, xrpusdt,  LINKUSDT , avaxusdt, LINK/USDT,  ETHUSDT ,  DOGEUSDT , adausdt,  DOTUSDT ,  BNBUSDT 
+Symbols after cleaning:
+XRPUSDT, BNBUSDT, ETHUSDT, LINKUSDT, DOTUSDT, ADAUSDT, SOLUSDT, DOGEUSDT, BTCUSDT, AVAXUSDT
+Unique cleaned symbols: 10
+
+=== Task 5: Remove Duplicates ===
+Duplicate rows found: 213
+Rows before removing duplicates: 9991
+Rows after removing duplicates: 9778
+
+=== Task 6: Detect Impossible Values ===
+Negative volume rows: 65
+Negative trade_count rows: 0
+Rows where high < low: 0
+Dropped impossible values: 65 rows
+
+=== Task 7: Create New Columns ===
+Created columns:
+price_range, price_change, percent_change, candle_direction
+
+Example row:
+open=0.17 close=0.17 high=0.17 low=0.17
+price_range=0.00 price_change=-0.00 percent_change=-0.87 candle_direction=down
+
+=== Task 8: Data-Quality Report ===
+Data-quality report
+Rows before cleaning: 9991
+Rows after cleaning: 9713
+Missing values before: 496
+Missing values after: 1672
+Duplicate rows found: 213
+Cleaning decision: invalid numeric values (399 rows) and invalid timestamps (299 rows) were coerced to NaN. Negative volumes (65 rows) were removed via the impossible-values check. Rows with high<low or trade_count<0 were also dropped. Duplicate rows were removed entirely.
+
+Saved cleaned dataset: data/clean/cleaned_market_data.csv
+Cleaned rows: 9713
+
+=== Sample A: 50-Record Sample Analysis ===
+Sample check: 50 records
+Average close price by symbol:
+  ADAUSDT: 0.16
+  AVAXUSDT: 6.75
+  BNBUSDT: 606.38
+  BTCUSDT: 62232.77
+  DOGEUSDT: 0.09
+  DOTUSDT: 1.02
+  ETHUSDT: 1841.73
+  LINKUSDT: 7.82
+  SOLUSDT: 75.22
+  XRPUSDT: 1.17
+Highest average volume: DOGEUSDT
+Candle direction counts:
+  down: 29
+  up: 20
+  flat: 1
+Largest price range row: BTCUSDT (range=2193.81)
+
+Saved sample results: results/pandas_sample_results.csv
+Sample rows used: 50
+Symbols included: 10
+Records per symbol: 5
+Questions answered: 4
+
+=== Sample B: Why Pandas Is Not Enough for Final Analytics ===
+Pandas is useful for checking and cleaning data by hand because it provides interactive data inspection, quick visualisation of missing values, easy type coercion, and immediate feedback on a small subset of the data, but not for what is considered big data. 
+However, a 50-record sample is not enough for proper analytics because: 
+	(1) It lacks statistical significance and cannot represent the full distribution of a large dataset; 
+	(2) Rare patterns or outliers present in the full dataset may be entirely absent from a small random sample. In our case we took 5 of each symbol to make it balanced, but it is still not representative. 
+	(3) Aggregate metrics like averages and counts computed on 50 rows have high variance and would mislead business decisions; 
+	(4) Spark is designed to process the full dataset in parallel, providing exact results and scalable analytics that pandas on a single machine cannot achieve for large volumes.
