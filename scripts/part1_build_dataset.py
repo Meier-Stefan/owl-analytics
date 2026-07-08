@@ -48,6 +48,7 @@ class RateLimiter:
         self._wait_count = 0
 
     def acquire(self):
+        sleep_time = 0.0
         with self._lock:
             now = time.monotonic()
             cutoff = now - self._window
